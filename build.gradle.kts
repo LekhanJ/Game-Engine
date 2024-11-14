@@ -9,6 +9,17 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType<JavaExec> {
+    // Set heap size and other JVM options
+    jvmArgs = listOf(
+        "-Xmx4096m",  // Set maximum heap size (adjust based on your needs)
+        "-Xms4096m",   // Set initial heap size
+        "-XX:+UseG1GC",  // Use the G1 garbage collector (more stable for larger apps)
+        "-XX:+HeapDumpOnOutOfMemoryError", // Generate heap dump on OutOfMemoryError
+        "-Dfile.encoding=UTF-8"  // Set file encoding to UTF-8
+    )
+}
+
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

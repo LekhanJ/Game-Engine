@@ -15,6 +15,11 @@ public class Window {
     private String title;
     private long glfwWindow;
 
+    public float r, g, b, a;
+    private boolean fadeToRed = false;
+    private boolean fadeToGreen = false;
+    private boolean fadeToBlue = false;
+
     private static Window window = null;
 
     private static Scene currentScene;
@@ -23,16 +28,21 @@ public class Window {
         this.width = 1280;
         this.height = 720;
         this.title = "Engine Window";
+        r = 0;
+        g = 0;
+        b = 0;
+        a = 1;
     }
 
     public static void changeScene(int newScene) {
         switch (newScene) {
             case 0:
                 currentScene = new LevelEditorScene();
-                // currentScene.init()
+                currentScene.init();
                 break;
             case 1:
                 currentScene = new LevelScene();
+                currentScene.init();
                 break;
             default:
                 assert false : "Unknown scene '" + newScene + "'";
@@ -97,32 +107,28 @@ public class Window {
 
         // Make the window visible
         glfwShowWindow(glfwWindow);
+
+        GL.createCapabilities();
+        Window.changeScene(0);
     }
 
     private void loop() {
-        GL.createCapabilities();
-
         float beginTime = Time.getTime();
-        float endTime = Time.getTime();
+        float endTime;
+        float dt = -1.0f;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
 
-            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
-                System.out.println("Space key is pressed");
-            }
-
-            if (MouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
-                System.out.println("Left click is pressed");
-            }
+            if (dt >= 0) currentScene.update(dt);
 
             glfwSwapBuffers(glfwWindow);
 
             endTime = Time.getTime();
-            float dt = endTime - beginTime;
+            dt = endTime - beginTime;
             beginTime = endTime;
         }
     }
