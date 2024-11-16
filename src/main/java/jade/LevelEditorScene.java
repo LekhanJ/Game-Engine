@@ -1,7 +1,9 @@
 package jade;
 
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
+import util.Time;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -38,10 +40,10 @@ public class LevelEditorScene extends Scene {
 
     private float[] vertexArray = {
         // Position                // Color
-        0.5f, -0.5f, 0.0f,         1.0f, 0.0f, 0.0f, 1.0f, // Bottom Right  0           1-----------2
-        -0.5f, 0.5f, 0.0f,         0.0f, 1.0f, 0.0f, 1.0f, // Top Left      1           |           |
-        0.5f, 0.5f, 0.0f,          0.0f, 0.0f, 1.0f, 1.0f, // Top Right     2           |           |
-        -0.5f, -0.5f, 0.0f,        1.0f, 1.0f, 0.0f, 1.0f, // Bottom Left   3           3-----------0
+        100.5f, -100.5f, 0.0f,         1.0f, 0.0f, 0.0f, 1.0f, // Bottom Right  0           1-----------2
+        -100.5f, 100.5f, 0.0f,         0.0f, 1.0f, 0.0f, 1.0f, // Top Left      1           |           |
+        100.5f, 100.5f, 0.0f,          0.0f, 0.0f, 1.0f, 1.0f, // Top Right     2           |           |
+        -100.5f, -100.5f, 0.0f,        1.0f, 1.0f, 0.0f, 1.0f, // Bottom Left   3           3-----------0
     };
 
     // Must be in counter-clockwise order
@@ -67,6 +69,7 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void init() {
+        this.camera = new Camera(new Vector2f());
         defaultShader = new Shader("assets/shaders/default.glsl");
         // ------------------------------------------------------------
         // Compile and link shaders
@@ -115,8 +118,18 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void update(float dt) {
+
+        camera.getPosition().x -= dt * 50.0f;
+        camera.getPosition().y -= dt * 50.0f;
+
         // Use shader program
         defaultShader.use();
+
+        // Uploading variable
+        defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+        defaultShader.uploadMat4f("uView", camera.getViewMatrix());
+        defaultShader.uploadFloat("uTime", Time.getTime());
+
         // Bind the VAO that we are using
         glBindVertexArray(VAO_ID);
 
