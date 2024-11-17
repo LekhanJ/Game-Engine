@@ -8,7 +8,6 @@ package jade;
     So we do ->  Projection Matrix * View Matrix * aPos  ->  Which converts world coordinates to normalised device coordinates
                  <-------- Multiplication order -------
 */
-
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;

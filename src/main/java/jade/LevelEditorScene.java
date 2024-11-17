@@ -1,8 +1,11 @@
 package jade;
 
+import components.FontRenderer;
+import components.SpriteRenderer;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
+import renderer.Texture;
 import util.Time;
 
 import java.nio.FloatBuffer;
@@ -39,11 +42,11 @@ public class LevelEditorScene extends Scene {
     private int vertexID, fragmentID, shaderProgram;
 
     private float[] vertexArray = {
-        // Position                // Color
-        100.5f, -100.5f, 0.0f,         1.0f, 0.0f, 0.0f, 1.0f, // Bottom Right  0           1-----------2
-        -100.5f, 100.5f, 0.0f,         0.0f, 1.0f, 0.0f, 1.0f, // Top Left      1           |           |
-        100.5f, 100.5f, 0.0f,          0.0f, 0.0f, 1.0f, 1.0f, // Top Right     2           |           |
-        -100.5f, -100.5f, 0.0f,        1.0f, 1.0f, 0.0f, 1.0f, // Bottom Left   3           3-----------0
+        // Position                    // Color                    // UV Coordinates
+        100f, 0f,   0.0f,       1.0f, 0.0f, 0.0f, 1.0f,     1, 1,  // Bottom Right  0           1-----------2
+        0f,   100f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f,     0, 0,  // Top Left      1           |           |
+        100f, 100f, 0.0f,       0.0f, 0.0f, 1.0f, 1.0f,     1, 0,  // Top Right     2           |           |
+        0f,   0f,   0.0f,       1.0f, 1.0f, 0.0f, 1.0f,     0, 1   // Bottom Left   3           3-----------0
     };
 
     // Must be in counter-clockwise order
@@ -63,14 +66,29 @@ public class LevelEditorScene extends Scene {
 
     private Shader defaultShader;
 
+    private Texture mario;
+
+    private boolean reverse;
+    private boolean isFirstTime = true;
+
+    GameObject testObj;
+
     public LevelEditorScene() {
 
     }
 
     @Override
     public void init() {
+        System.out.println("Creating test object");
+        this.testObj = new GameObject("Test Object");
+        this.testObj.addComponent(new SpriteRenderer());
+        this.testObj.addComponent(new FontRenderer());
+        this.addGameObjectToScene(this.testObj);
+
         this.camera = new Camera(new Vector2f());
         defaultShader = new Shader("assets/shaders/default.glsl");
+        mario = new Texture("assets/images/mario.png");
+        reverse = false;
         // ------------------------------------------------------------
         // Compile and link shaders
         // ------------------------------------------------------------
@@ -107,23 +125,43 @@ public class LevelEditorScene extends Scene {
         // Add the vertex attribute pointers
         int positionsSize = 3; // i.e, x, y, z
         int colorSize = 4; // i.e, r, g, b, a
-        int floatSizeBytes = 4; // So there are 4 bytes for 1 float
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
-        glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
+        int uvSize = 2;
+        int floatSizeInBytes = 4; // So there are 4 bytes for 1 float, or you can use Float.BYTES
+        int vertexSizeInBytes = (positionsSize + colorSize + uvSize) * floatSizeInBytes;
+        glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeInBytes, 0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionsSize * floatSizeBytes);
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeInBytes, positionsSize * floatSizeInBytes);
         glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeInBytes, (positionsSize + colorSize) * floatSizeInBytes);
+        glEnableVertexAttribArray(2);
     }
 
     @Override
     public void update(float dt) {
 
-        camera.getPosition().x -= dt * 50.0f;
-        camera.getPosition().y -= dt * 50.0f;
+        if (camera.getPosition().y < -600.0f) {
+            reverse = true;
+        } else if (camera.getPosition().y > 0.0f) {
+            reverse = false;
+        }
+
+        if (reverse) {
+            camera.getPosition().x += dt * 50.0f;
+            camera.getPosition().y += dt * 50.0f;
+        } else {
+            camera.getPosition().x -= dt * 50.0f;
+            camera.getPosition().y -= dt * 50.0f;
+        }
 
         // Use shader program
         defaultShader.use();
+
+        // Upload texture to shader
+        defaultShader.uploadTexture("TEX_SAMPLER", 0);
+        glActiveTexture(GL_TEXTURE0);
+        mario.bind();
 
         // Uploading variable
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
@@ -146,5 +184,17 @@ public class LevelEditorScene extends Scene {
         glBindVertexArray(0);
 
         defaultShader.detach();
+
+        if (isFirstTime) {
+            System.out.println("Creating gameObject!");
+            GameObject go = new GameObject("Game Object Test 2");
+            go.addComponent(new SpriteRenderer());
+            this.addGameObjectToScene(go);
+            isFirstTime = false;
+        }
+
+        for (GameObject go : this.gameObjects) {
+            go.update(dt);
+        }
     }
 }
