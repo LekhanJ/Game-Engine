@@ -9,14 +9,13 @@ package jade;
                  <-------- Multiplication order -------
 */
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Camera {
     private Matrix4f projectionMatrix, viewMatrix;
-    private Vector2f position;
+    private Vector3f position;
 
-    public Camera(Vector2f position) {
+    public Camera(Vector3f position) {
         this.position = position;
         this.projectionMatrix = new Matrix4f();
         this.viewMatrix = new Matrix4f();
@@ -44,7 +43,7 @@ public class Camera {
         return this.projectionMatrix;
     }
 
-    public Vector2f getPosition() {
+    public Vector3f getPosition() {
         return this.position;
     }
 }

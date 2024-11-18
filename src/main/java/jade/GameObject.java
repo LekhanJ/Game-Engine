@@ -18,13 +18,23 @@ public class GameObject {
 
     private String name;
     private List<Component> components;
+    public Transform transform;
 
     public GameObject(String name) {
-        this.name = name;
-        components = new ArrayList<>();
+        init(name, new Transform());
     }
 
-    public <T extends Component> T getComponents(Class<T> componentClass) {
+    public GameObject(String name, Transform transform) {
+        init(name, transform);
+    }
+
+    public void init(String name, Transform transform) {
+        this.name = name;
+        this.components = new ArrayList<>();
+        this.transform = transform;
+    }
+
+    public <T extends Component> T getComponent(Class<T> componentClass) {
         for (Component c : components) {
             if (componentClass.isAssignableFrom(c.getClass())) {
                 try {

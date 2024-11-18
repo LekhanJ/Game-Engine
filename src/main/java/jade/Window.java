@@ -16,9 +16,6 @@ public class Window {
     private long glfwWindow;
 
     public float r, g, b, a;
-    private boolean fadeToRed = false;
-    private boolean fadeToGreen = false;
-    private boolean fadeToBlue = false;
 
     private static Window window = null;
 
@@ -28,9 +25,9 @@ public class Window {
         this.width = 1280;
         this.height = 720;
         this.title = "Engine Window";
-        r = 0;
-        g = 0;
-        b = 0;
+        r = 1;
+        g = 1;
+        b = 1;
         a = 1;
     }
 
@@ -57,6 +54,10 @@ public class Window {
             Window.window = new Window();
         }
         return Window.window;
+    }
+
+    public static Scene getScene() {
+        return get().currentScene;
     }
 
     public void run() {
