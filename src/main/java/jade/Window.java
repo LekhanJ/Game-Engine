@@ -25,9 +25,9 @@ public class Window {
         this.width = 1280;
         this.height = 720;
         this.title = "Engine Window";
-        r = 1;
-        g = 1;
-        b = 1;
+        r = 0;
+        g = 0;
+        b = 0;
         a = 1;
     }
 
@@ -116,7 +116,7 @@ public class Window {
     }
 
     private void loop() {
-        float beginTime = Time.getTime();
+        float beginTime = Time.getTime();  // if there is any problem, use (float)glfwGetTime() instead
         float endTime;
         float dt = -1.0f;
 

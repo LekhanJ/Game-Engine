@@ -5,6 +5,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import renderer.Renderer;
+import util.AssetPool;
 
 import java.util.ArrayList;
 
@@ -20,33 +21,24 @@ public class LevelEditorScene extends Scene {
         this.camera = new Camera(new Vector3f());
         this.renderer = new Renderer();
 
-        int xOffset = 10;
-        int yOffset = 10;
+        GameObject mario = new GameObject("Mario", new Transform(new Vector2f(100, 100), new Vector2f(256, 256)));
+        mario.addComponent(new SpriteRenderer(AssetPool.getTexture("assets/images/mario.png")));
+        this.addGameObjectToScene(mario);
 
-        float totalWidth = (float)(600 - xOffset * 2);
-        float totalHeight = (float)(300 - yOffset * 2);
-        float sizeX = totalWidth / 100.0f;
-        float sizeY = totalHeight / 100.0f;
+        GameObject goomba = new GameObject("Goomba", new Transform(new Vector2f(400, 100), new Vector2f(128, 128)));
+        goomba.addComponent(new SpriteRenderer(AssetPool.getTexture("assets/images/goomba.png")));
+        this.addGameObjectToScene(goomba);
 
-        for (int x=0; x < 100; x++) {
-            for (int y=0; y < 100; y++) {
-                float xPos = xOffset + (x * sizeX);
-                float yPos = yOffset + (y * sizeY);
+        loadResources();
+    }
 
-                GameObject go = new GameObject("Obj" + x + " " + y, new Transform(new Vector2f(xPos, yPos), new Vector2f(sizeX, sizeY)));
-                go.addComponent(new SpriteRenderer(new Vector4f(xPos / totalWidth, yPos / totalHeight, 1, 1)));
-                this.addGameObjectToScene(go);
-            }
-        }
-
-        Vector4f c = new Vector4f(1.0f, 0.9f, 0.8f, 0.7f);
-        System.out.println("R: " + c.x + ", G: " + c.y + ", B: " + c.z + ", A: " + c.w);
+    // Makes sure that we are creating the shader, compiling and linking it as well.
+    private void loadResources() {
+        AssetPool.getShader("assets/shaders/default.glsl");
     }
 
     @Override
     public void update(float dt) {
-        System.out.println("FPS: " + 1/dt);
-
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
