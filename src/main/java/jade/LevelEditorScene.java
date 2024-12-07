@@ -13,6 +13,9 @@ import java.util.ArrayList;
 
 public class LevelEditorScene extends Scene {
 
+    private GameObject mario;
+    private SpriteSheet sprites;
+
     public LevelEditorScene() {
 
     }
@@ -25,15 +28,11 @@ public class LevelEditorScene extends Scene {
         this.gameObjects = new ArrayList<>();
         this.renderer = new Renderer();
 
-        SpriteSheet sprites = AssetPool.getSpriteSheet("assets/images/MarioSS.png");
+        sprites = AssetPool.getSpriteSheet("assets/images/MarioSS.png");
 
-        GameObject mario = new GameObject("Mario", new Transform(new Vector2f(100, 100), new Vector2f(256, 256)));
-        mario.addComponent(new SpriteRenderer(sprites.getSprite(2)));
+        mario = new GameObject("Mario", new Transform(new Vector2f(100, 100), new Vector2f(100, 100)));
+        mario.addComponent(new SpriteRenderer(sprites.getSprite(1)));
         this.addGameObjectToScene(mario);
-
-        GameObject goomba = new GameObject("Goomba", new Transform(new Vector2f(400, 100), new Vector2f(128, 128)));
-        goomba.addComponent(new SpriteRenderer(sprites.getSprite(5)));
-        this.addGameObjectToScene(goomba);
     }
 
     // Makes sure that we are creating the shader, compiling and linking it as well.
@@ -45,8 +44,21 @@ public class LevelEditorScene extends Scene {
         );
     }
 
+    private int spriteIndex = 0;
+    private float spriteFlipTime = 0.2f;
+    private float spriteFlipTimeLeft = 0.0f;
     @Override
     public void update(float dt) {
+        spriteFlipTimeLeft -= dt;
+        if (spriteFlipTimeLeft <= 0) {
+            spriteFlipTimeLeft = spriteFlipTime;
+            spriteIndex++;
+            if (spriteIndex > 11) {
+                spriteIndex = 0;
+            }
+            mario.getComponent(SpriteRenderer.class).setSprite(sprites.getSprite(spriteIndex));
+        }
+
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
