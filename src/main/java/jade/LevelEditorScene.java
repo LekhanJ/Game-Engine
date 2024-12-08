@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class LevelEditorScene extends Scene {
 
     private GameObject mario;
+    private GameObject newMario;
     private SpriteSheet sprites;
 
     public LevelEditorScene() {
@@ -30,9 +31,13 @@ public class LevelEditorScene extends Scene {
 
         sprites = AssetPool.getSpriteSheet("assets/images/MarioSS.png");
 
-        mario = new GameObject("Mario", new Transform(new Vector2f(100, 100), new Vector2f(100, 100)));
+        mario = new GameObject("Mario", new Transform(new Vector2f(100, 100), new Vector2f(100, 100)), 2);
         mario.addComponent(new SpriteRenderer(sprites.getSprite(1)));
         this.addGameObjectToScene(mario);
+
+        newMario = new GameObject("NewMario", new Transform(new Vector2f(170, 100), new Vector2f(100, 100)), 1);
+        newMario.addComponent(new SpriteRenderer(sprites.getSprite(2)));
+        this.addGameObjectToScene(newMario);
     }
 
     // Makes sure that we are creating the shader, compiling and linking it as well.
