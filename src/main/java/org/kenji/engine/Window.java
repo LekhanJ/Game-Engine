@@ -68,6 +68,11 @@ public class Window {
         if ( glfwWindow == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
+        // Callback setup
+        glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
+        glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
+        glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+        glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -116,6 +121,16 @@ public class Window {
             glfwPollEvents();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
+                System.out.println("Space button clicked");
+                glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (MouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+                System.out.println("Mouse 1 clicked");
+                glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+            }
 
             glfwSwapBuffers(glfwWindow); // swap the color buffers
         }
