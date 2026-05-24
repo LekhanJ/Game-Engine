@@ -1,9 +1,10 @@
 package org.kenji;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import org.kenji.engine.Window;
+
 public class Main {
-    static void main() {
-        System.out.println("Hello World");
+    public static void main(String[] args) {
+        Window window = Window.get();
+        window.run();
     }
 }
