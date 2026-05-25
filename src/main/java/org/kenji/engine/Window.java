@@ -1,5 +1,11 @@
 package org.kenji.engine;
 
+import org.kenji.engine.listener.KeyListener;
+import org.kenji.engine.listener.MouseListener;
+import org.kenji.engine.scenemanager.LevelEditorScene;
+import org.kenji.engine.scenemanager.LevelScene;
+import org.kenji.engine.scenemanager.Scene;
+import org.kenji.util.Time;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -20,10 +26,26 @@ public class Window {
 
     private static Window window = null;
 
+    private static Scene currentScene;
+
     private Window() {
         this.width = 1920;
         this.height = 1080;
         this.title = "Mario";
+    }
+
+    public static void changeScene(int newScene) {
+        switch (newScene) {
+            case 0:
+                currentScene = new LevelEditorScene();
+                break;
+            case 1:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Unknown Scene " + newScene;
+                break;
+        }
     }
 
     public static Window get() {
@@ -107,9 +129,17 @@ public class Window {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
+
+        // Initialize the scene so it won't be null
+        Window.changeScene(0);
     }
 
     private void loop() {
+        // Delta time setup
+        float beginTime = Time.getTime();
+        float endTime;
+        float dt = -1.0f;
+
         // Set the clear color
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
@@ -122,17 +152,20 @@ public class Window {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
-                System.out.println("Space button clicked");
-                glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
-            }
-
-            if (MouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
-                System.out.println("Mouse 1 clicked");
-                glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-            }
+            // Update the current scene
+            if (dt >= 0)
+                currentScene.update(dt);
 
             glfwSwapBuffers(glfwWindow); // swap the color buffers
+
+            // Calculate delta time
+            endTime = Time.getTime();
+            dt = endTime - beginTime;
+            beginTime = endTime;
+
+            // Reset one-frame input
+            KeyListener.endFrame();
+            MouseListener.endFrame();
         }
     }
 }
