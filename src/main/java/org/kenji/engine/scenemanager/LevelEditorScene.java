@@ -1,5 +1,6 @@
 package org.kenji.engine.scenemanager;
 
+import org.kenji.engine.renderer.Shader;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -11,32 +12,6 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class LevelEditorScene extends Scene {
-
-    // The source code of the vertex shader — runs once per vertex on the GPU
-    private String vertexShaderSrc = "#version 330 core\n" +
-            "layout (location=0) in vec3 aPos;\n" +   // Input: vertex position (x, y, z) from slot 0
-            "layout (location=1) in vec4 aColor;\n" + // Input: vertex color (r, g, b, a) from slot 1
-            "\n" +
-            "out vec4 fColor;\n" +                    // Output: pass the color to the fragment shader
-            "\n" +
-            "void main() {\n" +
-            "    fColor = aColor;\n" +                // Forward the color to the next shader stage
-            "    gl_Position = vec4(aPos, 1.0);\n" +  // Set the final screen position of this vertex
-            "}";
-
-    // The source code of the fragment shader — runs once per pixel on the GPU
-    private String fragmentShaderSrc = "#version 460 core\n" +
-            "\n" +
-            "in vec4 fColor;\n" +      // Input: color received from the vertex shader
-            "\n" +
-            "out vec4 color;\n" +      // Output: the final color written to the screen
-            "\n" +
-            "void main() {\n" +
-            "    color = fColor;\n" +  // Just paint this pixel with the interpolated vertex color
-            "}";
-
-    // IDs that OpenGL uses to track the compiled shaders and the linked shader program
-    private int vertexId, fragmentId, shaderProgram;
 
     // The raw vertex data: each row = one vertex, storing [x, y, z, r, g, b, a]
     private float[] vertexArray = {
@@ -56,78 +31,17 @@ public class LevelEditorScene extends Scene {
     // OpenGL object IDs for the VAO, VBO, and EBO (explained below where they're created)
     private int vaoId, vboId, eboId;
 
+    private Shader defaultShader;
+
     public LevelEditorScene() {
 
     }
 
     @Override
     public void init() {
+        defaultShader = new Shader("assets/shaders/default.glsl");
 
-        // ─── STEP 1: Compile the vertex shader ───────────────────────────────
-
-        // Ask OpenGL to create an empty shader of type VERTEX and give us its ID
-        vertexId = glCreateShader(GL_VERTEX_SHADER);
-
-        // Upload our vertex shader source code to the GPU
-        glShaderSource(vertexId, vertexShaderSrc);
-
-        // Tell the GPU to compile that source code
-        glCompileShader(vertexId);
-
-        // Ask OpenGL whether the compilation succeeded
-        int success = glGetShaderi(vertexId, GL_COMPILE_STATUS);
-        if (success == GL_FALSE) {
-            // Get how long the error message is so we can allocate the right buffer
-            int len = glGetShaderi(vertexId, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: defaultShader.glsl\n\tVertex shader compilation failed.");
-            // Print the actual error message from the GPU driver
-            System.out.println(glGetShaderInfoLog(vertexId, len));
-            // Crash the program so the bug doesn't go unnoticed
-            assert false : "";
-        }
-
-        // ─── STEP 2: Compile the fragment shader ─────────────────────────────
-
-        // Create an empty fragment shader on the GPU and get its ID
-        fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-
-        // Upload the fragment shader source code to the GPU
-        glShaderSource(fragmentId, fragmentShaderSrc);
-
-        // Compile the fragment shader
-        glCompileShader(fragmentId);
-
-        // Check if the fragment shader compiled successfully
-        success = glGetShaderi(fragmentId, GL_COMPILE_STATUS);
-        if (success == GL_FALSE) {
-            int len = glGetShaderi(fragmentId, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: defaultShader.glsl\n\tFragment shader compilation failed.");
-            System.out.println(glGetShaderInfoLog(fragmentId, len));
-            assert false : "";
-        }
-
-        // ─── STEP 3: Link both shaders into one shader program ────────────────
-
-        // Create an empty shader program on the GPU (this will be the full pipeline)
-        shaderProgram = glCreateProgram();
-
-        // Attach the compiled vertex shader to the program
-        glAttachShader(shaderProgram, vertexId);
-
-        // Attach the compiled fragment shader to the program
-        glAttachShader(shaderProgram, fragmentId);
-
-        // Link them together — this wires the vertex output into the fragment input
-        glLinkProgram(shaderProgram);
-
-        // Check if linking succeeded
-        success = glGetProgrami(shaderProgram, GL_LINK_STATUS);
-        if (success == GL_FALSE) {
-            int len = glGetProgrami(shaderProgram, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: defaultShader.glsl\n\tShader program linking failed.");
-            System.out.println(glGetProgramInfoLog(shaderProgram, len));
-            assert false : "";
-        }
+        defaultShader.compile();
 
         // ─── STEP 4: Create the VAO, VBO, EBO and upload geometry ────────────
 
@@ -199,8 +113,7 @@ public class LevelEditorScene extends Scene {
     @Override
     public void update(float dt) {
 
-        // Activate our shader program so the GPU uses our vertex + fragment shaders
-        glUseProgram(shaderProgram);
+        defaultShader.use();
 
         // Bind our VAO — this restores all the VBO/EBO layout settings we configured in init()
         glBindVertexArray(vaoId);
@@ -221,7 +134,6 @@ public class LevelEditorScene extends Scene {
         // Unbind the VAO (bind to 0 = no VAO active) — good practice to avoid accidental changes
         glBindVertexArray(0);
 
-        // Deactivate the shader program (bind to 0 = no shader active)
-        glUseProgram(0);
+        defaultShader.detach();
     }
 }
