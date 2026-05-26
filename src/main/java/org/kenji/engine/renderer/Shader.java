@@ -1,6 +1,10 @@
 package org.kenji.engine.renderer;
 
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
+
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -20,6 +24,7 @@ public class Shader {
         this.filepath = filepath;
 
         try {
+
             String source = new String(Files.readAllBytes(Paths.get(filepath)));
             String[] splitString = source.split("(#type)( )+([a-zA-Z]+)");
 
@@ -49,8 +54,6 @@ public class Shader {
                 throw new IOException("Unexpected token: " + secondPattern);
             }
 
-            System.out.println(vertexSource);
-            System.out.println(fragmentSource);
         } catch (IOException e) {
             e.printStackTrace();
             assert false : "Error: Could not open file for shader: " + filepath;
@@ -136,5 +139,24 @@ public class Shader {
     public void detach() {
         // Deactivate the shader program (bind to 0 = no shader active)
         glUseProgram(0);
+    }
+
+    // Uploading values into uniform variables/locations
+
+    public void uploadMat4f(String varName, Matrix4f mat4) {
+        // Find the location (slot number) of the uniform variable by its name in the shader source
+        // e.g. "uProjection" or "uView" — returns -1 if the name doesn't exist in the shader
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+
+        // Allocate a Java-side float buffer with exactly 16 slots (a 4x4 matrix = 16 floats)
+        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
+
+        // Write the matrix values from the JOML Matrix4f object into the float buffer
+        // JOML fills it in column-major order, which is exactly what OpenGL expects
+        mat4.get(matBuffer);
+
+        // Upload the buffer to the GPU, writing it into the uniform slot we found above
+        // 'false' means the matrix should NOT be transposed — it's already in the right layout
+        glUniformMatrix4fv(varLocation, false, matBuffer);
     }
 }

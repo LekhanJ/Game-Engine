@@ -1,11 +1,15 @@
 package org.kenji.engine.scenemanager;
 
+import org.joml.Vector2f;
+import org.kenji.engine.gameobject.Camera;
+import org.kenji.engine.listener.KeyListener;
 import org.kenji.engine.renderer.Shader;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -15,11 +19,11 @@ public class LevelEditorScene extends Scene {
 
     // The raw vertex data: each row = one vertex, storing [x, y, z, r, g, b, a]
     private float[] vertexArray = {
-            // Position              // Color (r, g, b, a)
-            0.5f, -0.5f, 0.0f,       1.0f, 0.0f, 0.0f, 0.0f,  // Bottom right  0
-            -0.5f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 0.0f,  // Top left      1
-            0.5f, 0.5f, 0.0f,        0.0f, 0.0f, 1.0f, 0.0f,  // Top right     2
-            -0.5f, -0.5f, 0.0f,      1.0f, 1.0f, 0.0f, 0.0f,  // Bottom left   3
+            // Position                // Color (r, g, b, a)
+            50.5f, -50.5f, 0.0f,       1.0f, 0.0f, 0.0f, 0.0f,  // Bottom right  0
+            -50.5f, 50.5f, 0.0f,       0.0f, 1.0f, 0.0f, 0.0f,  // Top left      1
+            50.5f, 50.5f, 0.0f,        0.0f, 0.0f, 1.0f, 0.0f,  // Top right     2
+            -50.5f, -50.5f, 0.0f,      1.0f, 1.0f, 0.0f, 0.0f,  // Bottom left   3
     };
 
     // Indices telling OpenGL which 3 vertices form each triangle (counter-clockwise order)
@@ -39,8 +43,11 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void init() {
-        defaultShader = new Shader("assets/shaders/default.glsl");
+        this.camera = new Camera(new Vector2f()); // Camera at 0,0 position
 
+        // Select the shader file
+        defaultShader = new Shader("assets/shaders/default.glsl");
+        // Compile the shader
         defaultShader.compile();
 
         // ─── STEP 4: Create the VAO, VBO, EBO and upload geometry ────────────
@@ -112,8 +119,12 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void update(float dt) {
-
+        // Activate shader program
         defaultShader.use();
+
+        // Upload the uniform values to the uniform variables in the default shader
+        defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+        defaultShader.uploadMat4f("uView", camera.getViewMatrix());
 
         // Bind our VAO — this restores all the VBO/EBO layout settings we configured in init()
         glBindVertexArray(vaoId);
