@@ -2,14 +2,12 @@ package org.kenji.engine.scenemanager;
 
 import org.joml.Vector2f;
 import org.kenji.engine.gameobject.Camera;
-import org.kenji.engine.listener.KeyListener;
 import org.kenji.engine.renderer.Shader;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;

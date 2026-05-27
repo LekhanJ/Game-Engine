@@ -1,13 +1,12 @@
 package org.kenji.engine.renderer;
 
-import org.joml.Matrix4f;
+import org.joml.*;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.*;
@@ -19,6 +18,8 @@ public class Shader {
     private String vertexSource;
     private String fragmentSource;
     private String filepath;
+
+    private boolean isBeingUsed;
 
     public Shader(String filepath) {
         this.filepath = filepath;
@@ -132,31 +133,76 @@ public class Shader {
     }
 
     public void use() {
-        // Activate our shader program so the GPU uses our vertex + fragment shaders
-        glUseProgram(shaderProgramId);
+        if (!isBeingUsed) {
+            // Activate our shader program so the GPU uses our vertex + fragment shaders
+            glUseProgram(shaderProgramId);
+            isBeingUsed = true;
+        }
     }
 
     public void detach() {
         // Deactivate the shader program (bind to 0 = no shader active)
         glUseProgram(0);
+        isBeingUsed = false;
     }
 
     // Uploading values into uniform variables/locations
 
-    public void uploadMat4f(String varName, Matrix4f mat4) {
+    public void uploadMat4f(String varName, Matrix4f mat4f) {
         // Find the location (slot number) of the uniform variable by its name in the shader source
         // e.g. "uProjection" or "uView" — returns -1 if the name doesn't exist in the shader
         int varLocation = glGetUniformLocation(shaderProgramId, varName);
+
+        // It is important that the shader is being used before uploading anything
+        use();
 
         // Allocate a Java-side float buffer with exactly 16 slots (a 4x4 matrix = 16 floats)
         FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
 
         // Write the matrix values from the JOML Matrix4f object into the float buffer
         // JOML fills it in column-major order, which is exactly what OpenGL expects
-        mat4.get(matBuffer);
+        mat4f.get(matBuffer);
 
         // Upload the buffer to the GPU, writing it into the uniform slot we found above
         // 'false' means the matrix should NOT be transposed — it's already in the right layout
         glUniformMatrix4fv(varLocation, false, matBuffer);
+    }
+
+    public void uploadMat3f(String varName, Matrix3f mat3f) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(9);
+        mat3f.get(matBuffer);
+        glUniformMatrix3fv(varLocation, false, matBuffer);
+    }
+
+    public void uploadVec4f(String varName, Vector4f vec4f) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        glUniform4f(varLocation, vec4f.x, vec4f.y, vec4f.z, vec4f.w);
+    }
+
+    public void uploadVec3f(String varName, Vector3f vec3f) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        glUniform3f(varLocation, vec3f.x, vec3f.y, vec3f.z);
+    }
+
+    public void uploadVec2f(String varName, Vector2f vec2f) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        glUniform2f(varLocation, vec2f.x, vec2f.y);
+    }
+
+    public void uploadFloat(String varName, float val) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        glUniform1f(varLocation, val);
+    }
+
+    public void uploadInt(String varName, int val) {
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+        glUniform1i(varLocation, val);
     }
 }
