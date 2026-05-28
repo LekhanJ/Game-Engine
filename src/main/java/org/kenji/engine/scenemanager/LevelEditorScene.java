@@ -3,6 +3,7 @@ package org.kenji.engine.scenemanager;
 import org.joml.Vector2f;
 import org.kenji.engine.gameobject.Camera;
 import org.kenji.engine.renderer.Shader;
+import org.kenji.engine.renderer.Texture;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -15,13 +16,17 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class LevelEditorScene extends Scene {
 
-    // The raw vertex data: each row = one vertex, storing [x, y, z, r, g, b, a]
+    // The raw vertex data sent to the GPU
+    // Each vertex has 9 floats: [x, y, z,  r, g, b, a,  u, v]
+    //   x, y, z = position in world space
+    //   r, g, b, a = vertex color
+    //   u, v = UV texture coordinates (0–1 range, maps to a point on the texture)
     private float[] vertexArray = {
-            // Position                // Color (r, g, b, a)
-            50.5f, -50.5f, 0.0f,       1.0f, 0.0f, 0.0f, 0.0f,  // Bottom right  0
-            -50.5f, 50.5f, 0.0f,       0.0f, 1.0f, 0.0f, 0.0f,  // Top left      1
-            50.5f, 50.5f, 0.0f,        0.0f, 0.0f, 1.0f, 0.0f,  // Top right     2
-            -50.5f, -50.5f, 0.0f,      1.0f, 1.0f, 0.0f, 0.0f,  // Bottom left   3
+            // Position               // Color (r, g, b, a)      // UV Coordinates
+            50.5f, -50.5f, 0.0f,      1.0f, 0.0f, 0.0f, 0.0f,    1, 1,  // Bottom right  0
+            -50.5f, 50.5f, 0.0f,      0.0f, 1.0f, 0.0f, 0.0f,    0, 0,  // Top left      1
+            50.5f, 50.5f, 0.0f,       0.0f, 0.0f, 1.0f, 0.0f,    1, 0,  // Top right     2
+            -50.5f, -50.5f, 0.0f,     1.0f, 1.0f, 0.0f, 0.0f,    0, 1   // Bottom left   3
     };
 
     // Indices telling OpenGL which 3 vertices form each triangle (counter-clockwise order)
@@ -30,10 +35,14 @@ public class LevelEditorScene extends Scene {
             0, 1, 3,  // Bottom left triangle
     };
 
-    // OpenGL object IDs for the VAO, VBO, and EBO (explained below where they're created)
+    // OpenGL object IDs for the VAO, VBO, and EBO
     private int vaoId, vboId, eboId;
 
+    // The shader program that will process our vertices and color the pixels
     private Shader defaultShader;
+
+    // The texture we will map onto the quad
+    private Texture testTexture;
 
     public LevelEditorScene() {
 
@@ -41,14 +50,24 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void init() {
-        this.camera = new Camera(new Vector2f()); // Camera at 0,0 position
 
-        // Select the shader file
+        // Create the camera starting at world position (0, 0)
+        this.camera = new Camera(new Vector2f());
+
+        // Offset the camera so the quad appears roughly centered on screen
+        camera.position.x = -500.0f;
+        camera.position.y = -500.0f;
+
+        // Point to the combined .glsl shader file (contains both vertex and fragment source)
         defaultShader = new Shader("assets/shaders/default.glsl");
-        // Compile the shader
+
+        // Parse and compile both shader stages from that file
         defaultShader.compile();
 
-        // ─── STEP 4: Create the VAO, VBO, EBO and upload geometry ────────────
+        // Load the texture image from disk and upload it to the GPU
+        this.testTexture = new Texture("assets/images/mario.png");
+
+        // ─── Create the VAO, VBO, EBO and upload geometry ────────────────────
 
         /*
             VBO (Vertex Buffer Object) -> Holds raw data of your geometry like vertex positions, colors, normals, and texture coordinates.
@@ -88,40 +107,49 @@ public class LevelEditorScene extends Scene {
         // Upload the index data to the GPU
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
-        // ─── STEP 5: Tell OpenGL how to read the vertex buffer ────────────────
+        // ─── Tell OpenGL how to read each vertex from the buffer ──────────────
 
-        // Number of floats used for position (x, y, z)
-        int positionsSize = 3;
+        // Number of floats for each attribute in one vertex
+        int positionsSize = 3; // x, y, z
+        int colorSize     = 4; // r, g, b, a
+        int uvSize        = 2; // u, v
 
-        // Number of floats used for color (r, g, b, a)
-        int colorSize = 4;
+        // Total byte size of one full vertex: (3 + 4 + 2) * 4 bytes = 36 bytes
+        // This "stride" tells OpenGL how many bytes to skip to get from one vertex to the next
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * Float.BYTES;
 
-        // A single float takes 4 bytes in memory
-        int floatSizeBytes = 4;
-
-        // Total bytes for one full vertex: (3 position + 4 color) * 4 bytes = 28 bytes
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
-
-        // Tell OpenGL: attribute slot 0 = position, 3 floats, stride = full vertex size, starts at byte 0
+        // Attribute slot 0 = position: 3 floats, starting at byte 0 of each vertex
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
+        glEnableVertexAttribArray(0); // Enable so the shader can actually read it
 
-        // Enable attribute slot 0 so the shader can read the position data
-        glEnableVertexAttribArray(0);
+        // Attribute slot 1 = color: 4 floats, starting after the 3 position floats
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionsSize * Float.BYTES);
+        glEnableVertexAttribArray(1); // Enable so the shader can actually read it
 
-        // Tell OpenGL: attribute slot 1 = color, 4 floats, stride = full vertex size, starts after the 3 position floats
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionsSize * floatSizeBytes);
-
-        // BUG: This should be glEnableVertexAttribArray(1) — currently enabling slot 0 twice instead of enabling slot 1
-        glEnableVertexAttribArray(0);
+        // Attribute slot 2 = UV coords: 2 floats, starting after the 3 position + 4 color floats
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES);
+        glEnableVertexAttribArray(2); // Enable so the shader can actually read it
     }
 
     @Override
     public void update(float dt) {
-        // Activate shader program
+
+        // Activate our shader program so the GPU uses our vertex + fragment shaders
         defaultShader.use();
 
-        // Upload the uniform values to the uniform variables in the default shader
+        // Tell the shader to sample from texture slot 0
+        defaultShader.uploadTexture("TEX_SAMPLER", 0);
+
+        // Make texture slot 0 the active slot on the GPU side
+        glActiveTexture(GL_TEXTURE0);
+
+        // Bind our texture into slot 0 so the shader can sample it
+        testTexture.bind();
+
+        // Upload the projection matrix — defines the visible area / coordinate space
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+
+        // Upload the view matrix — defines where the camera is looking from in the world
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
 
         // Bind our VAO — this restores all the VBO/EBO layout settings we configured in init()
@@ -133,16 +161,17 @@ public class LevelEditorScene extends Scene {
         // Enable the color attribute (slot 1) so the shader receives vertex colors
         glEnableVertexAttribArray(1);
 
-        // Draw the geometry using the EBO indices — draws 2 triangles = 1 quad
+        // Draw the geometry using the EBO indices — 6 indices = 2 triangles = 1 quad
         glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
 
         // Disable the attribute slots now that drawing is done
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
 
-        // Unbind the VAO (bind to 0 = no VAO active) — good practice to avoid accidental changes
+        // Unbind the VAO (0 = no VAO active) — good practice to avoid accidental changes
         glBindVertexArray(0);
 
+        // Deactivate the shader program
         defaultShader.detach();
     }
 }
