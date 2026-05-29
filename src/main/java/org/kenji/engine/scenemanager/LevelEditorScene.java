@@ -1,7 +1,10 @@
 package org.kenji.engine.scenemanager;
 
 import org.joml.Vector2f;
+import org.kenji.components.FontRenderer;
+import org.kenji.components.SpriteRenderer;
 import org.kenji.engine.gameobject.Camera;
+import org.kenji.engine.gameobject.GameObject;
 import org.kenji.engine.renderer.Shader;
 import org.kenji.engine.renderer.Texture;
 import org.lwjgl.BufferUtils;
@@ -44,12 +47,20 @@ public class LevelEditorScene extends Scene {
     // The texture we will map onto the quad
     private Texture testTexture;
 
+    // Game object for testing purpose
+    private GameObject testObj;
+
     public LevelEditorScene() {
 
     }
 
     @Override
     public void init() {
+        System.out.println("Creating test object");
+        this.testObj = new GameObject("test object");
+        this.testObj.addComponent(new SpriteRenderer());
+        this.testObj.addComponent(new FontRenderer());
+        this.addGameObjectToScene(this.testObj);
 
         // Create the camera starting at world position (0, 0)
         this.camera = new Camera(new Vector2f());
@@ -173,5 +184,9 @@ public class LevelEditorScene extends Scene {
 
         // Deactivate the shader program
         defaultShader.detach();
+
+        for (GameObject go : this.gameObjects) {
+            go.update(dt);
+        }
     }
 }
