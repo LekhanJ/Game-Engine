@@ -1,5 +1,6 @@
 package org.kenji.components;
 
+import org.joml.Vector4f;
 import org.kenji.engine.gameobject.Component;
 
 /*
@@ -9,20 +10,25 @@ import org.kenji.engine.gameobject.Component;
 */
 public class SpriteRenderer extends Component {
 
-    private boolean isFirstTime = false;
+    private Vector4f color;
+
+    public SpriteRenderer(Vector4f color) {
+        this.color = color;
+    }
 
     // Called once when the scene starts — good place to load sprite assets in the future
     @Override
     public void start() {
-        System.out.println("I am starting");
+
     }
 
     // Called every frame — this is where sprite drawing logic will eventually live
     @Override
     public void update(float dt) {
-        if (!isFirstTime) {
-            System.out.println("I am updating");
-            isFirstTime = true;
-        }
+
+    }
+
+    public Vector4f getColor() {
+        return this.color;
     }
 }

@@ -18,7 +18,7 @@ import static org.lwjgl.stb.STBImage.stbi_load;
             |    Texture     |      ---->      |       \       |
             |                |                 |           \   |
             +----------------+                 3---------------0
-        (0,0)                (0,1)         (0,0)                (0,1)
+        (0,0)                (1,0)         (0,0)                (1,0)
 
     if the width or height of the texture does not match with the quad we can
     BLUR or PIXELATE the texture as we stretch or shrink it.

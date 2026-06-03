@@ -24,21 +24,24 @@ public class GameObject {
     // The list of all components currently attached to this GameObject
     private List<Component> components;
 
+    // The transform data of the game object
+    public Transform transform;
+
     public GameObject(String name) {
-        this.name = name;
-        // Start with an empty component list — components are added via addComponent()
-        this.components = new ArrayList<>();
+        init(name, new Transform());
     }
 
-    /*
-        Finds and returns the first component on this GameObject that matches the given type.
-        Uses generics so the returned value is already the correct type — no casting needed at the call site.
+    public GameObject(String name, Transform transform) {
+        init(name, transform);
+    }
 
-        Example usage:
-            SpriteRenderer sr = myObj.getComponent(SpriteRenderer.class);
+    public void init(String name, Transform transform) {
+        this.name = name;
+        this.components = new ArrayList<>();
+        this.transform = transform;
+    }
 
-        Returns null if no matching component is found.
-    */
+    // Finds and returns the first component on this GameObject that matches the given type.
     public <T extends Component> T getComponent(Class<T> componentClass) {
         for (Component c : components) {
             // isAssignableFrom checks if c is the same type as, or a subclass of, componentClass
@@ -56,13 +59,7 @@ public class GameObject {
         return null;
     }
 
-    /*
-        Finds and removes the first component that matches the given type.
-        Uses an index-based loop so we can safely remove while iterating.
-
-        Example usage:
-            myObj.removeComponent(SpriteRenderer.class);
-    */
+    // Finds and removes the first component that matches the given type.
     public <T extends Component> void removeComponent(Class<T> componentClass) {
         for (int i = 0; i < components.size(); i++) {
             Component c = components.get(i);
@@ -87,7 +84,6 @@ public class GameObject {
     /*
         Called every frame by the scene.
         Delegates to each component's update() so all behaviour runs each frame.
-        dt = delta time passed down from the game loop.
     */
     public void update(float dt) {
         for (int i = 0; i < components.size(); i++) {

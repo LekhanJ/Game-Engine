@@ -2,6 +2,7 @@ package org.kenji.engine.scenemanager;
 
 import org.kenji.engine.gameobject.Camera;
 import org.kenji.engine.gameobject.GameObject;
+import org.kenji.engine.renderer.Renderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +19,13 @@ import java.util.List;
 */
 public abstract class Scene {
 
-    // The camera used to view this scene — subclasses set this up in init()
+    // The renderer used to render everything in the scene
+    protected Renderer renderer = new Renderer();
+
+    // The camera used to view this scene
     protected Camera camera;
 
-    // Tracks whether the scene has been started — used in addGameObjectToScene()
-    // to decide whether a newly added object needs an immediate start() call
+    // Tracks whether the scene has been started
     private boolean isRunning = false;
 
     // All GameObjects that belong to this scene — updated and rendered each frame
@@ -46,6 +49,7 @@ public abstract class Scene {
     public void start() {
         for (GameObject go : gameObjects) {
             go.start(); // Triggers start() on all components of each GameObject
+            this.renderer.add(go);
         }
         isRunning = true; // Mark the scene as live so new objects get started immediately
     }
@@ -67,10 +71,15 @@ public abstract class Scene {
             // Scene already running — add it and start it right away
             gameObjects.add(go);
             go.start();
+            this.renderer.add(go);
         }
     }
 
     // Called every frame by the game loop — subclasses must implement their own update logic
-    // dt = delta time (seconds since last frame)
     public abstract void update(float dt);
+
+    // Get the camera of the currently running scene
+    public Camera camera() {
+        return this.camera;
+    }
 }

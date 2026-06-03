@@ -14,11 +14,9 @@ public abstract class Component {
     // Set automatically by GameObject.addComponent() so the component knows its owner.
     public GameObject gameObject = null;
 
-    // Called once when the scene starts — override this to run one-time setup logic.
-    // Kept non-abstract so components that don't need a start() don't have to override it.
+    // Called once when the scene starts
     public void start() {}
 
-    // Called every frame — all components MUST implement this.
-    // dt = delta time (seconds since last frame), used to keep movement frame-rate independent.
+    // Called every frame
     public abstract void update(float dt);
 }
