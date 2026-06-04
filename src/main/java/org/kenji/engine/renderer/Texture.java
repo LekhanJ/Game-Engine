@@ -6,8 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImage.stbi_image_free;
-import static org.lwjgl.stb.STBImage.stbi_load;
+import static org.lwjgl.stb.STBImage.*;
 
 /*
     The shape we draw on the window, we will map our texture on that shape/quad
@@ -73,6 +72,9 @@ public class Texture {
         IntBuffer width    = BufferUtils.createIntBuffer(1);  // Will hold the image width in pixels
         IntBuffer height   = BufferUtils.createIntBuffer(1);  // Will hold the image height in pixels
         IntBuffer channels = BufferUtils.createIntBuffer(1);  // Will hold how many color channels (3=RGB, 4=RGBA)
+
+        // Flip sprites upside down
+        stbi_set_flip_vertically_on_load(true);
 
         // Load the image file into a raw byte buffer: [r, g, b, a, r, g, b, a, ...]
         // The last argument '0' means "give me however many channels the file actually has"

@@ -262,4 +262,13 @@ public class Shader {
         // This matches the slot number passed to glActiveTexture(GL_TEXTURE0 + slot)
         glUniform1i(varLocation, slot);
     }
+
+    public void uploadIntArray(String varName, int[] array) {
+        // Find the uniform slot by name in the shader
+        int varLocation = glGetUniformLocation(shaderProgramId, varName);
+        use();
+
+        // Upload all the textures in the array
+        glUniform1iv(varLocation, array);
+    }
 }

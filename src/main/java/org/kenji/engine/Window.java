@@ -5,7 +5,6 @@ import org.kenji.engine.listener.MouseListener;
 import org.kenji.engine.scenemanager.LevelEditorScene;
 import org.kenji.engine.scenemanager.LevelScene;
 import org.kenji.engine.scenemanager.Scene;
-import org.kenji.util.Time;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -144,12 +143,12 @@ public class Window {
 
     private void loop() {
         // Delta time setup
-        float beginTime = Time.getTime();
+        float beginTime = (float) glfwGetTime();
         float endTime;
         float dt = -1.0f;
 
         // Set the clear color
-        glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
@@ -167,7 +166,7 @@ public class Window {
             glfwSwapBuffers(glfwWindow); // swap the color buffers
 
             // Calculate delta time
-            endTime = Time.getTime();
+            endTime = (float) glfwGetTime();
             dt = endTime - beginTime;
             beginTime = endTime;
 
