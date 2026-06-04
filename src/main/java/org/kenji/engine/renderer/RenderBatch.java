@@ -3,6 +3,7 @@ package org.kenji.engine.renderer;
 import org.joml.Vector4f;
 import org.kenji.components.SpriteRenderer;
 import org.kenji.engine.Window;
+import org.kenji.util.AssetPool;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
@@ -38,8 +39,8 @@ public class RenderBatch {
     private int maxBatchSize;
 
     public RenderBatch(int maxBatchSize) {
-        shader = new Shader("assets/shaders/default.glsl");
-        shader.compile();
+        shader = AssetPool.getShader("assets/shaders/default.glsl");
+
         this.sprites = new SpriteRenderer[maxBatchSize];
         this.maxBatchSize = maxBatchSize;
 

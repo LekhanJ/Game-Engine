@@ -6,6 +6,7 @@ import org.kenji.components.SpriteRenderer;
 import org.kenji.engine.gameobject.Camera;
 import org.kenji.engine.gameobject.GameObject;
 import org.kenji.engine.gameobject.Transform;
+import org.kenji.util.AssetPool;
 
 public class LevelEditorScene extends Scene {
 
@@ -38,6 +39,13 @@ public class LevelEditorScene extends Scene {
                 this.addGameObjectToScene(go);
             }
         }
+
+        loadResources();
+    }
+
+    private void loadResources() {
+        AssetPool.getShader("assets/shaders/default.glsl");
+
     }
 
     @Override
