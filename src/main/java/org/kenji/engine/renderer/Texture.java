@@ -39,6 +39,8 @@ public class Texture {
     // The ID OpenGL gives us to refer to this texture on the GPU
     private int textureId;
 
+    private int width, height;
+
     public Texture(String filepath) {
         this.filepath = filepath;
 
@@ -81,6 +83,9 @@ public class Texture {
         ByteBuffer image = stbi_load(filepath, width, height, channels, 0);
 
         if (image != null) {
+            this.width = width.get(0);
+            this.height = height.get(0);
+
             if (channels.get(0) == 4) {
                 // Image has 4 channels (RGB + Alpha) — upload it to the GPU as RGBA
                 // Args: target, mipmap level, internal format, width, height, border (always 0), format, data type, data
@@ -109,5 +114,13 @@ public class Texture {
     // Unbind the texture — passing 0 tells OpenGL "no texture active" (good cleanup practice)
     public void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getHeight() {
+        return this.height;
     }
 }
