@@ -3,6 +3,7 @@ package org.kenji.components;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.kenji.engine.gameobject.Component;
+import org.kenji.engine.gameobject.Transform;
 import org.kenji.engine.renderer.Texture;
 
 /*
@@ -14,6 +15,9 @@ public class SpriteRenderer extends Component {
 
     private Vector4f color;
     private Sprite sprite;
+    private Transform lastTransform;
+
+    private boolean isDirty = false;
 
     public SpriteRenderer(Vector4f color) {
         this.color = color;
@@ -28,13 +32,16 @@ public class SpriteRenderer extends Component {
     // Called once when the scene starts — good place to load sprite assets in the future
     @Override
     public void start() {
-
+        this.lastTransform = gameObject.transform.copy();
     }
 
     // Called every frame — this is where sprite drawing logic will eventually live
     @Override
     public void update(float dt) {
-
+        if (!this.lastTransform.equals(this.gameObject.transform)) {
+            this.gameObject.transform.copy(this.lastTransform);
+            isDirty = true;
+        }
     }
 
     public Vector4f getColor() {
@@ -47,5 +54,18 @@ public class SpriteRenderer extends Component {
 
     public Vector2f[] getTextCoordinates() {
         return sprite.texCoords();
+    }
+
+    public void setSprite(Sprite sprite) {
+        this.sprite = sprite;
+        this.isDirty = true;
+    }
+
+    public void setColor(Vector4f color) {
+        if (!this.color.equals(color)) {
+            this.isDirty = true;
+            this.color.set(color);
+        }
+
     }
 }
