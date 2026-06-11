@@ -12,6 +12,8 @@ import org.kenji.util.AssetPool;
 
 public class LevelEditorScene extends Scene {
 
+    private GameObject mario;
+
     public LevelEditorScene() {
 
     }
@@ -25,7 +27,7 @@ public class LevelEditorScene extends Scene {
 
         Spritesheet sprites = AssetPool.getSpritesheet("assets/images/MarioSS.png");
 
-        GameObject mario = new GameObject(
+        mario = new GameObject(
                 "Mario",
                 new Transform(
                         new Vector2f(100, 100),
@@ -49,6 +51,8 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void update(float dt) {
+        mario.transform.position.x += 10 * dt;
+
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
