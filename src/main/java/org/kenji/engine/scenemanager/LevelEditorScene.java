@@ -13,6 +13,7 @@ import org.kenji.util.AssetPool;
 public class LevelEditorScene extends Scene {
 
     private GameObject mario;
+    private Spritesheet sprites;
 
     public LevelEditorScene() {
 
@@ -25,7 +26,7 @@ public class LevelEditorScene extends Scene {
 
         this.camera = new Camera(new Vector2f(-250, 0));
 
-        Spritesheet sprites = AssetPool.getSpritesheet("assets/images/MarioSS.png");
+        sprites = AssetPool.getSpritesheet("assets/images/MarioSS.png");
 
         mario = new GameObject(
                 "Mario",
@@ -49,13 +50,26 @@ public class LevelEditorScene extends Scene {
                 ));
     }
 
+    private int spriteIndex = 0;
+    private float spriteFlipTime = 0.2f;
+    private float spriteFlipTimeLeft = 0.0f;
+
     @Override
     public void update(float dt) {
-        mario.transform.position.x += 10 * dt;
+        spriteFlipTimeLeft -= dt;
+        if (spriteFlipTimeLeft <= 0) {
+            spriteFlipTimeLeft = spriteFlipTime;
+            spriteIndex++;
+            if (spriteIndex > 11) {
+                spriteIndex = 0;
+            }
+            mario.getComponent(SpriteRenderer.class).setSprite(sprites.getSprite(spriteIndex));
+        }
 
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
+
         this.renderer.render();
     }
 }
