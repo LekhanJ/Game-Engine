@@ -27,18 +27,21 @@ public class GameObject {
     // The transform data of the game object
     public Transform transform;
 
+    private int zIndex;
+
     public GameObject(String name) {
-        init(name, new Transform());
+        init(name, new Transform(), 0);
     }
 
-    public GameObject(String name, Transform transform) {
-        init(name, transform);
+    public GameObject(String name, Transform transform, int zIndex) {
+        init(name, transform, zIndex);
     }
 
-    public void init(String name, Transform transform) {
+    public void init(String name, Transform transform, int zIndex) {
         this.name = name;
         this.components = new ArrayList<>();
         this.transform = transform;
+        this.zIndex = zIndex;
     }
 
     // Finds and returns the first component on this GameObject that matches the given type.
@@ -99,5 +102,9 @@ public class GameObject {
         for (int i = 0; i < components.size(); i++) {
             components.get(i).start();
         }
+    }
+
+    public int zIndex() {
+        return this.zIndex;
     }
 }

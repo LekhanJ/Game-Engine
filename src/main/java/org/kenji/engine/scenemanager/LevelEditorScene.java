@@ -1,8 +1,6 @@
 package org.kenji.engine.scenemanager;
 
 import org.joml.Vector2f;
-import org.joml.Vector4f;
-import org.kenji.components.Sprite;
 import org.kenji.components.SpriteRenderer;
 import org.kenji.components.Spritesheet;
 import org.kenji.engine.gameobject.Camera;
@@ -33,7 +31,8 @@ public class LevelEditorScene extends Scene {
                 new Transform(
                         new Vector2f(100, 100),
                         new Vector2f(256, 256)
-                )
+                ),
+                -1
         );
         mario.addComponent(
                 new SpriteRenderer(sprites.getSprite(2))
