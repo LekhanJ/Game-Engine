@@ -5,6 +5,7 @@ import org.kenji.engine.listener.MouseListener;
 import org.kenji.engine.scenemanager.LevelEditorScene;
 import org.kenji.engine.scenemanager.LevelScene;
 import org.kenji.engine.scenemanager.Scene;
+import org.kenji.engine.ui.EditorLayer;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -19,17 +20,18 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
-    private int width, height;
+    public int width, height;
     private String title;
     private long glfwWindow;  // represents the memory address of the window
+    private EditorLayer editorLayer;
 
     private static Window window = null;
 
     private static Scene currentScene;
 
     private Window() {
-        this.width = 1600;
-        this.height = 900;
+        width = 1600;
+        height = 900;
         this.title = "Mario";
     }
 
@@ -70,6 +72,7 @@ public class Window {
 
         // Free the window callbacks and destroy the window
         glfwFreeCallbacks(glfwWindow);
+        editorLayer.dispose();
         glfwDestroyWindow(glfwWindow);
 
         // Terminate GLFW and free the error callback
@@ -102,6 +105,7 @@ public class Window {
         glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
         glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
         glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
+        glfwSetCharCallback(glfwWindow, KeyListener::charCallback);
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -137,6 +141,9 @@ public class Window {
         // bindings available for use.
         GL.createCapabilities();
 
+        editorLayer = new EditorLayer(glfwWindow);
+        editorLayer.init();
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -162,9 +169,15 @@ public class Window {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
+            editorLayer.beginFrame(dt);
+
             // Update the current scene
-            if (dt >= 0)
+            if (dt >= 0) {
+                editorLayer.render();
                 currentScene.update(dt);
+            }
+
+            editorLayer.endFrame();
 
             glfwSwapBuffers(glfwWindow); // swap the color buffers
 
@@ -177,5 +190,17 @@ public class Window {
             KeyListener.endFrame();
             MouseListener.endFrame();
         }
+    }
+
+    public static int getWidth() {
+        return get().width;
+    }
+
+    public static int getHeight() {
+        return get().height;
+    }
+
+    public static EditorLayer getEditorLayer() {
+        return get().editorLayer;
     }
 }

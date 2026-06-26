@@ -15,7 +15,7 @@
 
         <lwjgl.version>3.4.1</lwjgl.version>
         <joml.version>1.10.8</joml.version>
-        <imgui.version>1.87.0</imgui.version>
+        <imgui.version>1.92.0</imgui.version>
 
         <lwjgl.natives>natives-linux</lwjgl.natives>
     </properties>
