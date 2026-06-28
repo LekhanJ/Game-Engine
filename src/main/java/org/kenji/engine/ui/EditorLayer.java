@@ -1,5 +1,7 @@
 package org.kenji.engine.ui;
 
+import imgui.ImFontAtlas;
+import imgui.ImFontConfig;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
@@ -27,6 +29,17 @@ public class EditorLayer {
         ImGui.createContext();
 
         ImGuiIO io = ImGui.getIO();
+
+        ImFontAtlas atlas = io.getFonts();
+
+        atlas.addFontFromFileTTF(
+                "assets/fonts/CaskaydiaCoveNerdFont-Regular.ttf",
+                18
+        );
+        atlas.addFontFromFileTTF(
+                "assets/fonts/CaskaydiaCoveNerdFont-Bold.ttf",
+                24
+        );
 
         // Don't create imgui.ini
         io.setIniFilename(null);
